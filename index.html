@@ -5,37 +5,53 @@
   <meta lang="zh">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <style type="text/css">
-  #color{
+  header{
+    margin-bottom: 20px;
+  }
+  header span{
+    display: inline-block;
+    vertical-align: middle;
+  }
+  header #color{
     width: 100px;
     height: 100px;
+    margin-right: 50px;
   }
-  #filedrag{
+  header #filedrag{
     width: 400px;
     height: 100px;
     border: 4px dotted gray;
-    margin-bottom: 20px;
     text-align: center;
     line-height: 100px;
     color: gray;
     font-size: 30px;
   }
   #collector{
-    width: 100%;
+    width: 600px;
     height: 50px;
   }
-  .item{
+  #collector .item{
     display: inline-block;
+    margin-right: 5px;
     width: 50px;
     height: 50px;
+  }
+  #collector .item span{
+    background-color: #fff;
+  }
+  .hover {
+    background-color: gray;
   }
   </style>
 </head>
 <body>
-  <div id="color"></div>
-  <div id="filedrag">drag and drop here</div>
+  <header>
+    <span id="color"></span>
+    <span id="filedrag">拖拽上传图片</span>
+  </header>
   <canvas id="myCanvas"></canvas>
   <div id="collector"></div>
-  <div style="display:none"><img id="image" src="./examples/img/photo2.jpg"></div>
+  <div style="display:none"><img id="image" src="./img/photo1.jpg"></div>
 <script type="text/javascript">
   var color = $id("color");
   var canvas = $id("myCanvas");
@@ -48,10 +64,41 @@
     return document.getElementById(id);
   }
 
-  function filedragHover(e) {
+  function fileDragHover(e) {
     e.stopPropagation();
     e.preventDefault();
     e.target.className = (e.type == 'dragover' ? "hover" : "");
+  }
+
+  function fileSelectHandler(e) {
+    fileDragHover(e);
+    var files = e.target.files || e.dataTransfer.files;
+    for(var i = 0, f; f = files[i]; i++) {
+      parseFile(f);
+    }
+  }
+
+  function parseFile(f) {
+    var reader = new FileReader();
+    var _image;
+
+    reader.onload = (function (file) {
+      return function(e) {
+
+        _image = new Image();
+        _image.onload = function () {
+          context.drawImage(_image, 0, 0, _image.width, _image.height);
+        }
+        _image.src = e.target.result;
+
+        // var span = document.createElement('span');
+        // span.innerHTML = ['<img class="thumb" src="', e.target.result,
+        //                     '" title="', escape(file.name), '"/>'].join('');
+        // filedrag.appendChild(span);
+      }
+    })(f);
+
+    reader.readAsDataURL(f);
   }
 
   window.onload = function() {
@@ -61,9 +108,9 @@
     canvas.height = image.height;
     context.drawImage(image, 0,0,image.width,image.height);
     
-    filedrag.addEventListener('dragover', filedragHover, false);
-    filedrag.addEventListener('dragleave', filedragHover, false);
-    filedrag.addEventListener('drop', fileselectHandler, false);
+    filedrag.addEventListener('dragover', fileDragHover, false);
+    filedrag.addEventListener('dragleave', fileDragHover, false);
+    filedrag.addEventListener('drop', fileSelectHandler, false);
 
     canvas.onmousemove = function(e) {
         // not so sure about these... might need to offset them or so
@@ -92,7 +139,9 @@
       item.style.fontSize = '12px';
       item.style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
       collectors.appendChild(item);
-      item.innerText = rgbToHex(r,g,b);
+      var colorText = document.createElement('span');
+      colorText.innerText = rgbToHex(r,g,b);
+      item.appendChild(colorText);
     }
   }
 
