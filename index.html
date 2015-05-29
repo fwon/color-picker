@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <title></title>
+  <meta lang="zh">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <style type="text/css">
+  #color{
+    width: 100px;
+    height: 100px;
+  }
+  #filedrag{
+    width: 400px;
+    height: 100px;
+    border: 4px dotted gray;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 100px;
+    color: gray;
+    font-size: 30px;
+  }
+  #collector{
+    width: 100%;
+    height: 50px;
+  }
+  .item{
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+  }
+  </style>
+</head>
+<body>
+  <div id="color"></div>
+  <div id="filedrag">drag and drop here</div>
+  <canvas id="myCanvas"></canvas>
+  <div id="collector"></div>
+  <div style="display:none"><img id="image" src="./examples/img/photo2.jpg"></div>
+<script type="text/javascript">
+  var color = $id("color");
+  var canvas = $id("myCanvas");
+  var context = canvas.getContext("2d");
+  var image = $id('image');
+  var collectors = $id('collector');
+  var filedrag = $id('filedrag');
+
+  function $id(id) {
+    return document.getElementById(id);
+  }
+
+  function filedragHover(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    e.target.className = (e.type == 'dragover' ? "hover" : "");
+  }
+
+  window.onload = function() {
+    console.log(image.width);
+    console.log(image.height);
+    canvas.width = image.width;
+    canvas.height = image.height;
+    context.drawImage(image, 0,0,image.width,image.height);
+    
+    filedrag.addEventListener('dragover', filedragHover, false);
+    filedrag.addEventListener('dragleave', filedragHover, false);
+    filedrag.addEventListener('drop', fileselectHandler, false);
+
+    canvas.onmousemove = function(e) {
+        // not so sure about these... might need to offset them or so
+        var x = e.offsetX;
+        var y = e.offsetY;
+
+        // set color now
+        var canvasColor = context.getImageData(x, y, 1, 1).data; // rgba e [0,255]
+        var r = canvasColor[0];
+        var g = canvasColor[1];
+        var b = canvasColor[2];
+
+        color.style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    canvas.onclick = function(e) {
+      var x = e.offsetX;
+      var y = e.offsetY;
+      var canvasColor = context.getImageData(x, y, 1, 1).data; // rgba e [0,255]
+      var r = canvasColor[0];
+      var g = canvasColor[1];
+      var b = canvasColor[2];
+      
+      var item = document.createElement('span');
+      item.className = 'item';
+      item.style.fontSize = '12px';
+      item.style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+      collectors.appendChild(item);
+      item.innerText = rgbToHex(r,g,b);
+    }
+  }
+
+  function rgbToHex(r,g,b) {
+    return '#' + parseInt(r, 10).toString(16) + parseInt(g, 10).toString(16) + parseInt(b, 10).toString(16);
+  }
+
+</script>
+</body>
+</html>
